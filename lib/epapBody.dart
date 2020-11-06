@@ -1,11 +1,18 @@
 import 'package:uuid/uuid.dart';
 import 'package:flutter/material.dart';
 import './reminderMain.dart';
-import './reminderWidget.dart';
+import './reminder_card.dart';
+import './new_timer_screen.dart';
 
 var uuid = Uuid();
 
 class EpapBody extends StatefulWidget {
+  // final Function addReminder;
+
+  // EpapBody(
+  //   this.addReminder,
+  // );
+
   @override
   _EpapBodyState createState() => _EpapBodyState();
 }
@@ -26,10 +33,6 @@ class Reminder {
     this.reminderName,
     this.pickedDate,
     this.pickedTime,
-    this.isActive,
-    this.isExpanded,
-    this.isDeleted,
-    this.cycle,
     this.id,
   });
 }
@@ -39,20 +42,21 @@ class _EpapBodyState extends State<EpapBody> {
   TimeOfDay pickedTime = TimeOfDay.now();
   String reminderName = "New Reminder";
   RepeatEnum pickedCycle = RepeatEnum.none;
-  List<Reminder> reminders = [];
-  bool isActive = false;
-  bool isDeleted = false;
-  bool isExpanded = false;
-  var id;
+  List<Reminder> reminders;
+  List styledReminders = [];
+
+  static const String _title = 'Reminders';
+
+  bool isFullLength = true;
 
   Reminder generateReminder() {
     return Reminder(
       reminderName: reminderName,
       pickedDate: pickedDate,
       pickedTime: pickedTime,
-      isActive: isActive,
-      isExpanded: isExpanded,
-      isDeleted: isDeleted,
+      // isActive: isActive,
+      // isExpanded: isExpanded,
+      // isDeleted: isDeleted,
       id: uuid.v4(),
     );
   }
@@ -69,30 +73,12 @@ class _EpapBodyState extends State<EpapBody> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            ReminderMain(
-              reminders,
-              onChange,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        elevation: 0.0,
-        child: Icon(Icons.add),
-        backgroundColor: Colors.green,
-        onPressed: () {
-          _pickName();
-        },
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-    );
+  void onReminderChange(reminderName) {
+    setState(() {
+      styledReminders.add(reminderName);
+    });
+
+    print(styledReminders.length);
   }
 
   // @override
@@ -100,13 +86,77 @@ class _EpapBodyState extends State<EpapBody> {
   //   return Scaffold(
   //     body: SingleChildScrollView(
   //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.center,
   //         children: [
-
+  //           ReminderMain(
+  //             reminders,
+  //             onChange,
+  //           ),
   //         ],
   //       ),
   //     ),
+  //     floatingActionButton: FloatingActionButton(
+  //       elevation: 0.0,
+  //       child: Icon(Icons.add),
+  //       backgroundColor: Colors.green,
+  //       onPressed: () {
+  //         _pickName();
+  //       },
+  //     ),
+  //     floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
   //   );
   // }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          _title,
+          style: TextStyle(color: Colors.black),
+        ),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        leading: Icon(
+          Icons.menu,
+          color: Colors.black,
+        ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.search, color: Colors.black),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: Icon(Icons.person, color: Colors.black),
+            onPressed: () {},
+          )
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(children: [
+          ...(styledReminders).map((reminder) {
+            return ReminderCard(isFullLength, reminder);
+          }).toList()
+        ]),
+      ),
+      floatingActionButton: FloatingActionButton(
+        elevation: 0.0,
+        child: Icon(Icons.add),
+        backgroundColor: Colors.green,
+        // onPressed: () {
+        //   _pickName();
+        // },
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => NewTimerScreen(onReminderChange)),
+          );
+        },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  }
 
   _pickName() {
     TextEditingController _nameController = TextEditingController();
